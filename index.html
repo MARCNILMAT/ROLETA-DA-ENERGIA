@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Roleta da Sorte - Auditores da Energia (Turma 902)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Efeito de fundo dinâmico -->
+  <div class="bg-glow-orb orb-1"></div>
+  <div class="bg-glow-orb orb-2"></div>
+  <div class="bg-grid-overlay"></div>
+
+  <div class="app-container">
+    <!-- Cabeçalho -->
+    <header class="app-header">
+      <div class="header-badges">
+        <span class="badge-tag"><span class="pulse-dot"></span> AUDITORES DA ENERGIA &bull; TURMA 902</span>
+        <div class="header-actions">
+          <button id="btnSoundToggle" class="icon-btn" title="Ativar/Desativar Som" aria-label="Som">
+            <span id="soundIcon">🔊</span>
+          </button>
+          <button id="btnOpenFolder" class="icon-btn text-btn" title="Consultar Informações do Folder">
+            <span>📋</span> Ver Folder
+          </button>
+          <button id="btnFullscreen" class="icon-btn" title="Tela Cheia" aria-label="Tela Cheia">
+            <span>⛶</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="title-group">
+        <h1 class="main-title">A ROLETA DA SORTE</h1>
+        <p class="subtitle">DESAFIO DOS SETORES: <strong>GIRE E APRENDA</strong></p>
+      </div>
+
+      <!-- Placar do Jogador -->
+      <div class="score-board">
+        <div class="score-card">
+          <span class="score-label">RODADAS</span>
+          <span class="score-val" id="statRounds">0</span>
+        </div>
+        <div class="score-card highlight-green">
+          <span class="score-label">ACERTOS</span>
+          <span class="score-val" id="statCorrect">0</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">EFICIÊNCIA</span>
+          <span class="score-val" id="statEfficiency">100%</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Área Principal de Jogo -->
+    <main class="game-layout">
+      <!-- Seção da Roleta -->
+      <section class="wheel-section" id="wheelSection">
+        <div class="wheel-wrapper">
+          <!-- Ponteiro indicador com animação de tick -->
+          <div class="wheel-pointer" id="wheelPointer">
+            <svg viewBox="0 0 50 65" width="50" height="65">
+              <defs>
+                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/>
+                </filter>
+                <linearGradient id="pointerGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ffd700"/>
+                  <stop offset="50%" stop-color="#ff9800"/>
+                  <stop offset="100%" stop-color="#e65100"/>
+                </linearGradient>
+              </defs>
+              <polygon points="25,62 3,12 47,12" fill="url(#pointerGrad)" stroke="#ffffff" stroke-width="3" filter="url(#shadow)"/>
+              <circle cx="25" cy="18" r="8" fill="#ffffff" filter="url(#shadow)"/>
+              <circle cx="25" cy="18" r="4" fill="#e65100"/>
+            </svg>
+          </div>
+
+          <!-- Canvas da Roleta -->
+          <div class="canvas-container">
+            <canvas id="rouletteCanvas" width="520" height="520"></canvas>
+            <!-- Centro decorativo da roleta -->
+            <div class="wheel-center-cap" id="wheelCenterCap">
+              <div class="center-cap-inner">
+                <span class="center-icon">⚡</span>
+                <span class="center-text">ENERGIA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botão Principal de START / GIRAR -->
+        <div class="wheel-controls">
+          <button id="btnSpin" class="btn-spin">
+            <span class="btn-icon">🎡</span>
+            <span class="btn-text">GIRAR A ROLETA!</span>
+            <span class="btn-subtext">CLIQUE PARA INICIAR</span>
+          </button>
+        </div>
+
+        <!-- Legenda dos 6 Setores -->
+        <div class="sectors-legend">
+          <div class="legend-chip" style="--chip-color: #0284c7"><span>1. Geração</span></div>
+          <div class="legend-chip" style="--chip-color: #dc2626"><span>2. Vilões do Consumo</span></div>
+          <div class="legend-chip" style="--chip-color: #f59e0b"><span>3. Eficiência</span></div>
+          <div class="legend-chip" style="--chip-color: #7c3aed"><span>4. Hábitos</span></div>
+          <div class="legend-chip" style="--chip-color: #059669"><span>5. Economia</span></div>
+          <div class="legend-chip" style="--chip-color: #16a34a"><span>6. Meio Ambiente</span></div>
+        </div>
+      </section>
+
+      <!-- Painel de Desafio / Perguntas -->
+      <section class="challenge-section" id="challengeSection">
+        <!-- Estado Inicial: Aguardando giro -->
+        <div class="card idle-state" id="idleCard">
+          <div class="idle-graphic">
+            <span class="large-icon">🎯</span>
+          </div>
+          <h3>Pronto para o Desafio?</h3>
+          <p>Clique no botão <strong>"GIRAR A ROLETA!"</strong> para sortear um dos 6 setores temáticos do folder da Turma 902.</p>
+          <div class="idle-tips">
+            <div class="tip-item">💡 Aprenda sobre eficiência energética</div>
+            <div class="tip-item">⚡ Conheça os grandes vilões do consumo</div>
+            <div class="tip-item">🌱 Descubra dicas ecológicas e economia real</div>
+          </div>
+        </div>
+
+        <!-- Estado Ativo: Pergunta Sorteada -->
+        <div class="card quiz-card hidden" id="quizCard">
+          <!-- Banner do Setor Sorteado -->
+          <div class="sector-banner" id="sectorBanner">
+            <span class="banner-icon" id="sectorIcon">🏭</span>
+            <div class="banner-text">
+              <span class="banner-tag">SETOR SORTEADO</span>
+              <h2 class="banner-title" id="sectorTitle">1. GERAÇÃO</h2>
+              <p class="banner-subtitle" id="sectorSubtitle">Fontes renováveis e não renováveis</p>
+            </div>
+          </div>
+
+          <!-- Pergunta -->
+          <div class="question-body">
+            <div class="question-header">
+              <span class="question-number">PERGUNTA DO DESAFIO</span>
+            </div>
+            <p class="question-text" id="questionText">
+              Carregando pergunta...
+            </p>
+
+            <!-- 4 Alternativas -->
+            <div class="options-grid" id="optionsGrid">
+              <!-- Renderizado via JavaScript -->
+            </div>
+          </div>
+
+          <!-- Rodapé de Ações do Quiz -->
+          <div class="quiz-footer">
+            <button id="btnCheckAnswer" class="btn-action btn-check" disabled>
+              <span>✔️</span> VERIFICAR RESPOSTA
+            </button>
+          </div>
+
+          <!-- Painel de Explicação / Feedback (Aparece após verificar) -->
+          <div class="feedback-panel hidden" id="feedbackPanel">
+            <div class="feedback-header" id="feedbackHeader">
+              <span class="feedback-icon" id="feedbackIcon">🎉</span>
+              <div>
+                <h4 class="feedback-title" id="feedbackTitle">Parabéns! Resposta Correta!</h4>
+                <p class="feedback-subtitle" id="feedbackSubtitle">Você demonstrou conhecimento de auditor de energia.</p>
+              </div>
+            </div>
+
+            <!-- Explicação Didática Detalhada -->
+            <div class="explanation-box">
+              <div class="box-heading">
+                <span>📚</span> <strong>POR QUE ESSA É A RESPOSTA?</strong>
+              </div>
+              <p id="explanationText" class="box-text">...</p>
+            </div>
+
+            <!-- Dica "Você Sabia?" -->
+            <div class="did-you-know-box" id="didYouKnowBox">
+              <div class="box-heading">
+                <span>💡</span> <strong>VOCÊ SABIA? (DICA DO FOLDER)</strong>
+              </div>
+              <p id="didYouKnowText" class="box-text">...</p>
+            </div>
+
+            <!-- Botão Próximo Giro -->
+            <div class="feedback-actions">
+              <button id="btnNextRound" class="btn-action btn-next">
+                <span>🔄</span> GIRAR NOVAMENTE
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal do Folder Completo (Para consulta didática da turma) -->
+    <div class="modal-overlay hidden" id="folderModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-badge">MATERIAL DE APOIO</span>
+            <h2>GUIA COMPLETO: AUDITORES DA ENERGIA</h2>
+          </div>
+          <button class="modal-close-btn" id="btnCloseModal">&times;</button>
+        </div>
+
+        <div class="modal-scroll-body">
+          <div class="folder-grid">
+            <!-- 1. Geração -->
+            <div class="folder-item">
+              <div class="folder-item-head" style="border-color: #0284c7;">
+                <span class="f-num">1</span>
+                <div>
+                  <h4>GERAÇÃO</h4>
+                  <small>Como a energia elétrica é gerada?</small>
+                </div>
+              </div>
+              <p>Compreenda fontes renováveis (solar, eólica, biomassa e hidrelétrica) e fontes não renováveis (carvão, gás, petróleo e nuclear). O Brasil tem matriz predominantemente hidrelétrica, sensível aos períodos de seca.</p>
+            </div>
+
+            <!-- 2. Vilões do Consumo -->
+            <div class="folder-item">
+              <div class="folder-item-head" style="border-color: #dc2626;">
+                <span class="f-num">2</span>
+                <div>
+                  <h4>VILÕES DO CONSUMO</h4>
+                  <small>Aparelhos de alta potência</small>
+                </div>
+              </div>
+              <p>Chuveiro elétrico (pode passar de 5.500W), geladeira (funciona 24h/dia), ar-condicionado e ferro de passar. O consumo = Potência (kW) × Tempo de uso diário.</p>
+            </div>
+
+            <!-- 3. Eficiência Energética -->
+            <div class="folder-item">
+              <div class="folder-item-head" style="border-color: #f59e0b;">
+                <span class="f-num">3</span>
+                <div>
+                  <h4>EFICIÊNCIA ENERGÉTICA</h4>
+                  <small>Menos energia para o mesmo trabalho</small>
+                </div>
+              </div>
+              <p>Adotar lâmpadas LED modernas e eletrodomésticos com <strong>Selo Procel A</strong>. Gera mesma luminosidade e conforto gastando até 85% menos eletricidade.</p>
+            </div>
+
+            <!-- 4. Hábitos Conscientes -->
+            <div class="folder-item">
+              <div class="folder-item-head" style="border-color: #7c3aed;">
+                <span class="f-num">4</span>
+                <div>
+                  <h4>HÁBITOS CONSCIENTES</h4>
+                  <small>Mudanças simples no dia a dia</small>
+                </div>
+              </div>
+              <p>Banhos de no máximo 5 a 8 minutos, apagar luzes ao desocupar cômodos, aproveitar luz do sol, não secar roupas atrás da geladeira e passar roupas em lote.</p>
+            </div>
+
+            <!-- 5. Economia -->
+            <div class="folder-item">
+              <div class="folder-item-head" style="border-color: #059669;">
+                <span class="f-num">5</span>
+                <div>
+                  <h4>ECONOMIA</h4>
+                  <small>Custo, faturas e bandeiras</small>
+                </div>
+              </div>
+              <p>Entender a medição em kWh e as bandeiras tarifárias (Verde = sem taxa extra; Amarela = alerta; Vermelha 1 e 2 = alto custo térmico). Economia que alivia o bolso familiar.</p>
+            </div>
+
+            <!-- 6. Meio Ambiente -->
+            <div class="folder-item">
+              <div class="folder-item-head" style="border-color: #16a34a;">
+                <span class="f-num">6</span>
+                <div>
+                  <h4>MEIO AMBIENTE</h4>
+                  <small>Sustentabilidade e futuro</small>
+                </div>
+              </div>
+              <p>Menos desperdício significa menos acionamento de usinas a carvão e óleo, reduzindo emissões de gases de efeito estufa (CO₂) e preservando os rios e a biodiversidade.</p>
+            </div>
+          </div>
+
+          <!-- Destaques especiais do Folder -->
+          <div class="folder-special-sections">
+            <div class="special-card led-card">
+              <div class="special-header">
+                <span class="special-icon">💡</span>
+                <div>
+                  <h4>VOCÊ SABIA? ECONOMIA ANUAL: R$ 90,00</h4>
+                  <small>Comparação direta de iluminação</small>
+                </div>
+              </div>
+              <div class="bars-comparison">
+                <div class="bar-group">
+                  <div class="bar-label">Lâmpada Incandescente</div>
+                  <div class="bar-track">
+                    <div class="bar-fill incand" style="width: 85%;">R$ 130/ano</div>
+                  </div>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-label">Lâmpada LED Moderna</div>
+                  <div class="bar-track">
+                    <div class="bar-fill led" style="width: 25%;">R$ 40/ano</div>
+                  </div>
+                </div>
+              </div>
+              <p class="special-footer-note">👉 Trocar apenas uma lâmpada comum por LED pode economizar cerca de <strong>R$ 90,00 por ano</strong> na conta de luz!</p>
+            </div>
+
+            <div class="special-card procel-card">
+              <div class="special-header">
+                <span class="special-icon">🏷️</span>
+                <div>
+                  <h4>GUIA DO SELO PROCEL</h4>
+                  <small>Classificação de Eficiência Energética</small>
+                </div>
+              </div>
+              <div class="procel-scale">
+                <div class="procel-badge grade-a active">A &bull; Mais Eficiente</div>
+                <div class="procel-badge grade-b">B</div>
+                <div class="procel-badge grade-c">C</div>
+                <div class="procel-badge grade-e">E &bull; Menos Eficiente</div>
+              </div>
+              <p class="special-footer-note">✅ <strong>Selo A:</strong> Garante os menores níveis de consumo e máxima eficiência reconhecida pelo Inmetro/Procel.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-action btn-check" id="btnModalUnderstood">ENTENDI, VAMOS JOGAR!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Canvas de Confetes -->
+    <canvas id="confettiCanvas"></canvas>
+  </div>
+
+  <!-- Scripts -->
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
